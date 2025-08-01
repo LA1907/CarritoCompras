@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ecommerce - Carrito de Compras</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(4px);
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(102, 126, 234, 0.1);
+            padding: 8px 15px;
+            border-radius: 25px;
+        }
+
+        .btn-primary, .btn-secondary, .btn-success, .btn-danger {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .cart-badge {
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 8px;
+            font-size: 0.8em;
+            margin-left: 5px;
+        }
+
+        .content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(4px);
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .product-image, .cart-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .cart-image {
+            width: 80px;
+            height: 80px;
+        }
+
+        .product-info h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .product-info p {
+            color: #666;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .cart-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .quantity-input {
+            width: 60px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .cart-item {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            background: white;
+        }
+
+        .cart-info {
+            flex: 1;
+        }
+
+        .cart-info h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .total-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .total-amount {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .close {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .admin-section {
+            margin-top: 20px;
+        }
+
+        .image-input-toggle {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .toggle-btn {
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .image-preview {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 10px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .nav {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .cart-item {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <nav class="nav">
+                <div class="logo">🛒 ECommerce</div>
+                <div class="nav-buttons">
+                    <div id="userInfo" class="user-info" style="display: none;">
+                        <span id="userName"></span>
+                        <button onclick="logout()" class="btn-secondary">Cerrar Sesión</button>
+                    </div>
+                    <button onclick="showSection('products')" class="btn-primary">Productos</button>
+                    <button onclick="showSection('cart')" class="btn-primary">
+                        Carrito <span id="cartBadge" class="cart-badge" style="display: none;">0</span>
+                    </button>
+                    <button onclick="showLoginModal()" id="loginBtn" class="btn-secondary">Iniciar Sesión</button>
+                    <button onclick="showSection('admin')" class="btn-secondary">Admin</button>
+                </div>
+            </nav>
+        </header>
+
+        <main class="content">
+            <section id="products" class="section active">
+                <h2>Productos Disponibles</h2>
+                <div class="loading" id="productsLoading">Cargando productos...</div>
+                <div class="products-grid" id="productsGrid"></div>
+            </section>
+
+            <section id="cart" class="section">
+                <h2>Mi Carrito de Compras</h2>
+                <div id="cartItems"></div>
+                <div class="total-section" id="cartTotal" style="display: none;">
+                    <div class="total-amount">Total: $<span id="totalAmount">0.00</span></div>
+                    <button onclick="checkout()" class="btn-success">Finalizar Compra</button>
+                </div>
+            </section>
+
+            <section id="admin" class="section">
+                <h2>Panel de Administración</h2>
+                <div class="nav-buttons" style="margin-bottom: 20px;">
+                    <button onclick="showAdminSection('manageProducts')" class="btn-primary">Gestionar Productos</button>
+                    <button onclick="showAdminSection('manageOrders')" class="btn-primary">Ver Pedidos</button>
+                    <button onclick="showAdminSection('manageUsers')" class="btn-primary">Ver Usuarios</button>
+                </div>
+
+                <div id="manageProducts" class="admin-section">
+                    <h3>Gestión de Productos</h3>
+                    <button onclick="showAddProductModal()" class="btn-success" style="margin-bottom: 20px;">Agregar Producto</button>
+                    <div id="adminProductsList"></div>
+                </div>
+
+                <div id="manageOrders" class="admin-section" style="display: none;">
+                    <h3>Todos los Pedidos</h3>
+                    <div id="adminOrdersList"></div>
+                </div>
+
+                <div id="manageUsers" class="admin-section" style="display: none;">
+                    <h3>Usuarios Registrados</h3>
+                    <div id="adminUsersList"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('loginModal')">&times;</span>
+            <h2>Iniciar Sesión</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Contraseña:</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn-primary">Iniciar Sesión</button>
+                <button type="button" onclick="showRegisterModal()" class="btn-secondary">Registrarse</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('registerModal')">&times;</span>
+            <h2>Registrarse</h2>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label>Nombre:</label>
+                    <input type="text" id="registerName" required>
+                </div>
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="registerEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Contraseña:</label>
+                    <input type="password" id="registerPassword" required>
+                </div>
+                <button type="submit" class="btn-primary">Registrarse</button>
+                <button type="button" onclick="showLoginModal()" class="btn-secondary">Ya tengo cuenta</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div id="addProductModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('addProductModal')">&times;</span>
+            <h2>Agregar Producto</h2>
+            <form id="addProductForm">
+                <div class="form-group">
+                    <label>Nombre:</label>
+                    <input type="text" id="productName" required>
+                </div>
+                <div class="form-group">
+                    <label>Descripción:</label>
+                    <textarea id="productDescription" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Precio:</label>
+                    <input type="number" id="productPrice" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Stock:</label>
+                    <input type="number" id="productStock" required>
+                </div>
+                <div class="form-group">
+                    <label>Imagen:</label>
+                    <div class="image-input-toggle">
+                        <button type="button" class="toggle-btn active" onclick="toggleImageInput('url')">URL</button>
+                        <button type="button" class="toggle-btn" onclick="toggleImageInput('file')">Archivo</button>
+                    </div>
+                    <input type="url" id="productImageUrl" placeholder="https://ejemplo.com/imagen.jpg" style="display: block;">
+                    <input type="file" id="productImageFile" accept="image/*" style="display: none;">
+                    <img id="imagePreview" class="image-preview" alt="Vista previa">
+                </div>
+                <button type="submit" class="btn-primary">Agregar Producto</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Product Modal -->
+    <div id="editProductModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('editProductModal')">&times;</span>
+            <h2>Editar Producto</h2>
+            <form id="editProductForm">
+                <input type="hidden" id="editProductId">
+                <div class="form-group">
+                    <label>Nombre:</label>
+                    <input type="text" id="editProductName" required>
+                </div>
+                <div class="form-group">
+                    <label>Descripción:</label>
+                    <textarea id="editProductDescription" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Precio:</label>
+                    <input type="number" id="editProductPrice" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Stock:</label>
+                    <input type="number" id="editProductStock" required>
+                </div>
+                <div class="form-group">
+                    <label>Imagen:</label>
+                    <div class="image-input-toggle">
+                        <button type="button" class="toggle-btn active" onclick="toggleEditImageInput('url')">URL</button>
+                        <button type="button" class="toggle-btn" onclick="toggleEditImageInput('file')">Archivo</button>
+                    </div>
+                    <input type="url" id="editProductImageUrl" placeholder="https://ejemplo.com/imagen.jpg" style="display: block;">
+                    <input type="file" id="editProductImageFile" accept="image/*" style="display: none;">
+                    <img id="editImagePreview" class="image-preview" alt="Vista previa">
+                </div>
+                <button type="submit" class="btn-primary">Actualizar Producto</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Configuración de la aplicación
+        const config = {
+            // URLs para desarrollo local con microservicios
+            apiUrls: {
+                products: 'http://localhost:3001/api/productos',
+                cart: 'http://localhost:3002/api/carrito',
+                users: 'http://localhost:3003/api/usuarios',
+                orders: 'http://localhost:3003/api/pedidos'
+            },
+            // Imagen por defecto en formato base64
+            defaultImage: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjhGOUZBIi8+CjxwYXRoIGQ9Ik0xMDAgNzBMMTMwIDEwMEgxMTBWMTMwSDkwVjEwMEg3MEwxMDAgNzBaIiBmaWxsPSIjREREIi8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTYwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOTk5IiBmb250LXNpemU9IjE0Ij5JbWFnZW48L3RleHQ+Cjwvc3ZnPg=='
+        };
+
+        // Variables globales
+        let currentUser = null;
+        let authToken = null;
+        let products = [];
+        let cartItems = [];
+
+        // Productos de ejemplo con enlaces de imágenes
+        const sampleProducts = [
+            {
+                id: 1,
+                nombre: "Smartphone Samsung Galaxy",
+                descripcion: "Teléfono inteligente con pantalla AMOLED de 6.5 pulgadas",
+                precio: 599.99,
+                stock: 15,
+                imagen: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=400&fit=crop"
+            },
+            {
+                id: 2,
+                nombre: "Laptop Gaming",
+                descripcion: "Laptop para gaming con RTX 4060 y 16GB RAM",
+                precio: 1299.99,
+                stock: 8,
+                imagen: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=400&fit=crop"
+            },
+            {
+                id: 3,
+                nombre: "Auriculares Inalámbricos",
+                descripcion: "Auriculares Bluetooth con cancelación de ruido",
+                precio: 199.99,
+                stock: 25,
+                imagen: "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=400&h=400&fit=crop"
+            },
+            {
+                id: 4,
+                nombre: "Smart Watch",
+                descripcion: "Reloj inteligente con GPS y monitor cardíaco",
+                precio: 299.99,
+                stock: 12,
+                imagen: "https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=400&h=400&fit=crop"
+            }
+        ];
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthStatus();
+            loadProducts();
+            setupEventListeners();
+            setupImagePreviews();
+        });
+
+        // Configurar event listeners
+        function setupEventListeners() {
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('registerForm').addEventListener('submit', handleRegister);
+            document.getElementById('addProductForm').addEventListener('submit', handleAddProduct);
+            document.getElementById('editProductForm').addEventListener('submit', handleEditProduct);
+        }
+
+        // Configurar vistas previas de imágenes
+        function setupImagePreviews() {
+            // Preview para agregar producto
+            document.getElementById('productImageUrl').addEventListener('input', function() {
+                const preview = document.getElementById('imagePreview');
+                const url = this.value;
+                if (url && isValidImageUrl(url)) {
+                    preview.src = url;
+                    preview.style.display = 'block';
+                } else {
+                    preview.style.display = 'none';
+                }
+            });
+
+            document.getElementById('productImageFile').addEventListener('change', function() {
+                const preview = document.getElementById('imagePreview');
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    preview.style.display = 'none';
+                }
+            });
+
+            // Preview para editar producto
+            document.getElementById('editProductImageUrl').addEventListener('input', function() {
+                const preview = document.getElementById('editImagePreview');
+                const url = this.value;
+                if (url && isValidImageUrl(url)) {
+                    preview.src = url;
+                    preview.style.display = 'block';
+                } else {
+                    preview.style.display = 'none';
+                }
+            });
+
+            document.getElementById('editProductImageFile').addEventListener('change', function() {
+                const preview = document.getElementById('editImagePreview');
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    preview.style.display = 'none';
+                }
+            });
+        }
+
+        // Validar URL de imagen
+        function isValidImageUrl(url) {
+            try {
+                new URL(url);
+                return /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url) || url.includes('unsplash.com') || url.includes('images.');
+            } catch {
+                return false;
+            }
+        }
+
+        // Alternar tipo de entrada de imagen
+        function toggleImageInput(type) {
+            const urlInput = document.getElementById('productImageUrl');
+            const fileInput = document.getElementById('productImageFile');
+            const urlBtn = document.querySelector('.toggle-btn:first-child');
+            const fileBtn = document.querySelector('.toggle-btn:last-child');
+            const preview = document.getElementById('imagePreview');
+
+            if (type === 'url') {
+                urlInput.style.display = 'block';
+                fileInput.style.display = 'none';
+                urlBtn.classList.add('active');
+                fileBtn.classList.remove('active');
+                fileInput.value = '';
+            } else {
+                urlInput.style.display = 'none';
+                fileInput.style.display = 'block';
+                fileBtn.classList.add('active');
+                urlBtn.classList.remove('active');
+                urlInput.value = '';
+            }
+            preview.style.display = 'none';
+        }
+
+        // Alternar tipo de entrada de imagen para edición
+        function toggleEditImageInput(type) {
+            const urlInput = document.getElementById('editProductImageUrl');
+            const fileInput = document.getElementById('editProductImageFile');
+            const modal = document.getElementById('editProductModal');
+            const urlBtn = modal.querySelector('.toggle-btn:first-child');
+            const fileBtn = modal.querySelector('.toggle-btn:last-child');
+            const preview = document.getElementById('editImagePreview');
+
+            if (type === 'url') {
+                urlInput.style.display = 'block';
+                fileInput.style.display = 'none';
+                urlBtn.classList.add('active');
+                fileBtn.classList.remove('active');
+                fileInput.value = '';
+            } else {
+                urlInput.style.display = 'none';
+                fileInput.style.display = 'block';
+                fileBtn.classList.add('active');
+                urlBtn.classList.remove('active');
+                urlInput.value = '';
+            }
+            preview.style.display = 'none';
+        }
+
+        // Verificar estado de autenticación
+        function checkAuthStatus() {
+            const token = localStorage.getItem('authToken');
+            const user = localStorage.getItem('currentUser');
+            
+            if (token && user) {
+                authToken = token;
+                currentUser = JSON.parse(user);
+                updateUIForLoggedInUser();
+                loadCart();
+            }
+        }
+
+        // Actualizar UI para usuario logueado
+        function updateUIForLoggedInUser() {
+            document.getElementById('userInfo').style.display = 'flex';
+            document.getElementById('userName').textContent = currentUser.nombre;
+            document.getElementById('loginBtn').style.display = 'none';
+        }
+
+        // Mostrar sección
+        function showSection(sectionName) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            document.getElementById(sectionName).classList.add('active');
+            
+            switch(sectionName) {
+                case 'products':
+                    loadProducts();
+                    break;
+                case 'cart':
+                    loadCart();
+                    break;
+                case 'admin':
+                    loadAdminData();
+                    break;
+            }
+        }
+
+        // Cargar productos (con datos de ejemplo si no hay conexión al backend)
+        async function loadProducts() {
+            try {
+                document.getElementById('productsLoading').style.display = 'block';
+                
+                // Intentar cargar desde el backend
+                try {
+                    const response = await fetch(config.apiUrls.products);
+                    const data = await response.json();
+                    
+                    if (data.success && data.data.length > 0) {
+                        products = data.data;
+                    } else {
+                        throw new Error('No products from backend');
+                    }
+                } catch (backendError) {
+                    // Si no hay backend disponible, usar productos de ejemplo
+                    console.log('Using sample products');
+                    products = sampleProducts;
+                }
+                
+                displayProducts();
+            } catch (error) {
+                console.error('Error al cargar productos:', error);
+                document.getElementById('productsGrid').innerHTML = '<div class="empty-state">Error al cargar productos</div>';
+            } finally {
+                document.getElementById('productsLoading').style.display = 'none';
+            }
+        }
+
+        // Mostrar productos
+        function displayProducts() {
+            const grid = document.getElementById('productsGrid');
+            
+            if (products.length === 0) {
+                grid.innerHTML = '<div class="empty-state">No hay productos disponibles</div>';
+                return;
+            }
+            
+            grid.innerHTML = products.map(product => {
+                const imageUrl = getProductImageUrl(product);
+                
+                return `
+                    <div class="product-card">
+                        <img src="${imageUrl}" 
+                             alt="${product.nombre}" 
+                             class="product-image"
+                             onerror="this.src='${config.defaultImage}'">
+                        <div class="product-info">
+                            <h3>${product.nombre}</h3>
+                            <p>${product.descripcion}</p>
+                            <p><strong>Precio: $${parseFloat(product.precio).toFixed(2)}</strong></p>
+                            <p>Stock: ${product.stock}</p>
+                        </div>
+                        <div class="cart-controls">
+                            <button onclick="addToCart(${product.id})" class="btn-primary">
+                                Agregar al Carrito
+                            </button>
+                            ${currentUser && currentUser.rol === 'admin' ? `
+                            <button onclick="editProduct(${product.id})" class="btn-secondary">Editar</button>
+                            <button onclick="deleteProduct(${product.id})" class="btn-danger">Eliminar</button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Obtener URL de imagen del producto
+        function getProductImageUrl(product) {
+            if (product.imagen) {
+                // Si es una URL completa, usarla directamente
+                if (product.imagen.startsWith('http')) {
+                    return product.imagen;
+                }
+                // Si es una ruta relativa del servidor
+                return `http://localhost:3001${product.imagen}`;
+            }
+            return config.defaultImage;
+        }
+
+        // Agregar al carrito
+        async function addToCart(productId) {
+            if (!currentUser) {
+                alert('Debes iniciar sesión para agregar productos al carrito');
+                showLoginModal();
+                return;
+            }
+
+            try {
+                // Si hay backend disponible
+                const response = await fetch(config.apiUrls.cart, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        usuario_id: currentUser.id,
+                        producto_id: productId,
+                        cantidad: 1
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Producto agregado al carrito');
+                    updateCartBadge();
+                } else {
+                    alert('Error al agregar producto al carrito');
+                }
+            } catch (error) {
+                // Simulación local si no hay backend
+                const product = products.find(p => p.id === productId);
+                if (product) {
+                    const existingItem = cartItems.find(item => item.producto_id === productId);
+                    if (existingItem) {
+                        existingItem.cantidad += 1;
+                    } else {
+                        cartItems.push({
+                            id: Date.now(),
+                            producto_id: productId,
+                            nombre: product.nombre,
+                            precio: product.precio,
+                            imagen: product.imagen,
+                            cantidad: 1
+                        });
+                    }
+                    alert('Producto agregado al carrito');
+                    updateCartBadge();
+                }
+            }
+        }
+
+        // Cargar carrito
+        async function loadCart() {
+            if (!currentUser) {
+                document.getElementById('cartItems').innerHTML = 
+                    '<div class="empty-state">Debes iniciar sesión para ver tu carrito</div>';
+                document.getElementById('cartTotal').style.display = 'none';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${config.apiUrls.cart}/${currentUser.id}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    cartItems = data.data;
+                }
+            } catch (error) {
+                console.log('Using local cart data');
+            }
+            
+            displayCart();
+            updateCartBadge();
+        }
+
+        // Mostrar carrito
+        function displayCart() {
+            const container = document.getElementById('cartItems');
+            const totalSection = document.getElementById('cartTotal');
+            
+            if (cartItems.length === 0) {
+                container.innerHTML = '<div class="empty-state">Tu carrito está vacío</div>';
+                totalSection.style.display = 'none';
+                return;
+            }
+            
+            let total = 0;
+            
+            container.innerHTML = cartItems.map(item => {
+                const itemTotal = item.cantidad * parseFloat(item.precio);
+                total += itemTotal;
+                const imageUrl = getProductImageUrl(item);
+                
+                return `
+                    <div class="cart-item">
+                        <img src="${imageUrl}" 
+                             alt="${item.nombre}" 
+                             class="cart-image"
+                             onerror="this.src='${config.defaultImage}'">
+                        <div class="cart-info">
+                            <h4>${item.nombre}</h4>
+                            <p>Precio: ${parseFloat(item.precio).toFixed(2)}</p>
+                            <p>Subtotal: ${itemTotal.toFixed(2)}</p>
+                        </div>
+                        <div class="cart-controls">
+                            <button onclick="updateQuantity(${item.id}, ${item.cantidad - 1})" ${item.cantidad === 1 ? 'disabled' : ''}>-</button>
+                            <input type="number" min="1" value="${item.cantidad}" 
+                                   class="quantity-input" 
+                                   onchange="updateQuantity(${item.id}, this.value)">
+                            <button onclick="updateQuantity(${item.id}, ${item.cantidad + 1})">+</button>
+                            <button onclick="removeFromCart(${item.id})" class="btn-danger">Eliminar</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('totalAmount').textContent = total.toFixed(2);
+            totalSection.style.display = 'block';
+        }
+
+        // Actualizar cantidad
+        async function updateQuantity(cartItemId, newQuantity) {
+            if (newQuantity < 1) return;
+
+            try {
+                const response = await fetch(`${config.apiUrls.cart}/${cartItemId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ cantidad: parseInt(newQuantity) })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    loadCart();
+                }
+            } catch (error) {
+                // Actualización local
+                const item = cartItems.find(item => item.id === cartItemId);
+                if (item) {
+                    item.cantidad = parseInt(newQuantity);
+                    displayCart();
+                    updateCartBadge();
+                }
+            }
+        }
+
+        // Eliminar del carrito
+        async function removeFromCart(cartItemId) {
+            try {
+                const response = await fetch(`${config.apiUrls.cart}/${cartItemId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    loadCart();
+                    updateCartBadge();
+                }
+            } catch (error) {
+                // Eliminación local
+                cartItems = cartItems.filter(item => item.id !== cartItemId);
+                displayCart();
+                updateCartBadge();
+                alert('Producto eliminado del carrito');
+            }
+        }
+
+        // Finalizar compra
+        async function checkout() {
+            if (!currentUser) {
+                alert('Debes iniciar sesión para finalizar la compra');
+                showLoginModal();
+                return;
+            }
+
+            if (cartItems.length === 0) {
+                alert('Tu carrito está vacío');
+                return;
+            }
+
+            if (!confirm('¿Estás seguro de que quieres finalizar la compra?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(config.apiUrls.orders, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        usuario_id: currentUser.id,
+                        productos: cartItems.map(item => ({
+                            producto_id: item.producto_id,
+                            cantidad: item.cantidad,
+                            precio_unitario: item.precio
+                        }))
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Compra realizada con éxito');
+                    cartItems = [];
+                    loadCart();
+                    updateCartBadge();
+                }
+            } catch (error) {
+                // Simulación de compra exitosa
+                alert('Compra realizada con éxito (modo demo)');
+                cartItems = [];
+                loadCart();
+                updateCartBadge();
+            }
+        }
+
+        // Actualizar badge del carrito
+        function updateCartBadge() {
+            const badge = document.getElementById('cartBadge');
+            if (cartItems.length > 0) {
+                const totalItems = cartItems.reduce((sum, item) => sum + item.cantidad, 0);
+                badge.textContent = totalItems;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        // Modales
+        function showLoginModal() {
+            document.getElementById('loginModal').classList.add('active');
+            document.getElementById('registerModal').classList.remove('active');
+        }
+
+        function showRegisterModal() {
+            document.getElementById('registerModal').classList.add('active');
+            document.getElementById('loginModal').classList.remove('active');
+        }
+
+        function showAddProductModal() {
+            document.getElementById('addProductModal').classList.add('active');
+            document.getElementById('addProductForm').reset();
+            document.getElementById('imagePreview').style.display = 'none';
+            toggleImageInput('url');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Manejar login
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch(`${config.apiUrls.users}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    authToken = data.token;
+                    currentUser = data.user;
+                    localStorage.setItem('authToken', authToken);
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    updateUIForLoggedInUser();
+                    closeModal('loginModal');
+                    loadCart();
+                    alert('Inicio de sesión exitoso');
+                }
+            } catch (error) {
+                // Demo login
+                currentUser = { id: 1, nombre: 'Usuario Demo', email: email, rol: 'admin' };
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                updateUIForLoggedInUser();
+                closeModal('loginModal');
+                alert('Inicio de sesión exitoso (modo demo)');
+            }
+        }
+
+        // Manejar registro
+        async function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+
+            try {
+                const response = await fetch(`${config.apiUrls.users}/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ nombre: name, email, password })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Registro exitoso');
+                    closeModal('registerModal');
+                    showLoginModal();
+                }
+            } catch (error) {
+                alert('Registro exitoso (modo demo)');
+                closeModal('registerModal');
+                showLoginModal();
+            }
+        }
+
+        // Manejar agregar producto
+        async function handleAddProduct(e) {
+            e.preventDefault();
+            
+            const productData = {
+                nombre: document.getElementById('productName').value,
+                descripcion: document.getElementById('productDescription').value,
+                precio: parseFloat(document.getElementById('productPrice').value),
+                stock: parseInt(document.getElementById('productStock').value)
+            };
+
+            // Determinar si usar URL o archivo
+            const imageUrl = document.getElementById('productImageUrl').value;
+            const imageFile = document.getElementById('productImageFile').files[0];
+
+            if (imageUrl && document.getElementById('productImageUrl').style.display !== 'none') {
+                productData.imagen = imageUrl;
+            }
+
+            try {
+                let response;
+                
+                if (imageFile && document.getElementById('productImageFile').style.display !== 'none') {
+                    // Usar FormData para archivos
+                    const formData = new FormData();
+                    Object.keys(productData).forEach(key => {
+                        formData.append(key, productData[key]);
+                    });
+                    formData.append('imagen', imageFile);
+                    
+                    response = await fetch(config.apiUrls.products, {
+                        method: 'POST',
+                        body: formData
+                    });
+                } else {
+                    // Usar JSON para URLs
+                    response = await fetch(config.apiUrls.products, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(productData)
+                    });
+                }
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Producto agregado exitosamente');
+                    closeModal('addProductModal');
+                    loadProducts();
+                    loadAdminProducts();
+                }
+            } catch (error) {
+                // Agregar localmente para demo
+                const newProduct = {
+                    ...productData,
+                    id: Date.now()
+                };
+                products.push(newProduct);
+                alert('Producto agregado exitosamente (modo demo)');
+                closeModal('addProductModal');
+                displayProducts();
+                loadAdminProducts();
+            }
+        }
+
+        // Editar producto
+        async function editProduct(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            // Llenar el formulario de edición
+            document.getElementById('editProductId').value = product.id;
+            document.getElementById('editProductName').value = product.nombre;
+            document.getElementById('editProductDescription').value = product.descripcion;
+            document.getElementById('editProductPrice').value = product.precio;
+            document.getElementById('editProductStock').value = product.stock;
+            
+            if (product.imagen && product.imagen.startsWith('http')) {
+                document.getElementById('editProductImageUrl').value = product.imagen;
+                document.getElementById('editImagePreview').src = product.imagen;
+                document.getElementById('editImagePreview').style.display = 'block';
+                toggleEditImageInput('url');
+            } else {
+                toggleEditImageInput('url');
+            }
+
+            document.getElementById('editProductModal').classList.add('active');
+        }
+
+        // Manejar editar producto
+        async function handleEditProduct(e) {
+            e.preventDefault();
+            
+            const productId = parseInt(document.getElementById('editProductId').value);
+            const productData = {
+                nombre: document.getElementById('editProductName').value,
+                descripcion: document.getElementById('editProductDescription').value,
+                precio: parseFloat(document.getElementById('editProductPrice').value),
+                stock: parseInt(document.getElementById('editProductStock').value)
+            };
+
+            const imageUrl = document.getElementById('editProductImageUrl').value;
+            const imageFile = document.getElementById('editProductImageFile').files[0];
+
+            if (imageUrl && document.getElementById('editProductImageUrl').style.display !== 'none') {
+                productData.imagen = imageUrl;
+            }
+
+            try {
+                let response;
+                
+                if (imageFile && document.getElementById('editProductImageFile').style.display !== 'none') {
+                    const formData = new FormData();
+                    Object.keys(productData).forEach(key => {
+                        formData.append(key, productData[key]);
+                    });
+                    formData.append('imagen', imageFile);
+                    
+                    response = await fetch(`${config.apiUrls.products}/${productId}`, {
+                        method: 'PUT',
+                        body: formData
+                    });
+                } else {
+                    response = await fetch(`${config.apiUrls.products}/${productId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(productData)
+                    });
+                }
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Producto actualizado exitosamente');
+                    closeModal('editProductModal');
+                    loadProducts();
+                    loadAdminProducts();
+                }
+            } catch (error) {
+                // Actualizar localmente para demo
+                const productIndex = products.findIndex(p => p.id === productId);
+                if (productIndex !== -1) {
+                    products[productIndex] = { ...products[productIndex], ...productData };
+                    alert('Producto actualizado exitosamente (modo demo)');
+                    closeModal('editProductModal');
+                    displayProducts();
+                    loadAdminProducts();
+                }
+            }
+        }
+
+        // Eliminar producto
+        async function deleteProduct(productId) {
+            if (!confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${config.apiUrls.products}/${productId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Producto eliminado exitosamente');
+                    loadProducts();
+                    loadAdminProducts();
+                }
+            } catch (error) {
+                // Eliminar localmente para demo
+                products = products.filter(p => p.id !== productId);
+                alert('Producto eliminado exitosamente (modo demo)');
+                displayProducts();
+                loadAdminProducts();
+            }
+        }
+
+        // Cerrar sesión
+        function logout() {
+            currentUser = null;
+            authToken = null;
+            cartItems = [];
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('currentUser');
+            document.getElementById('userInfo').style.display = 'none';
+            document.getElementById('loginBtn').style.display = 'block';
+            updateCartBadge();
+            showSection('products');
+            alert('Sesión cerrada correctamente');
+        }
+
+        // Funciones de administración
+        function showAdminSection(adminSectionName) {
+            document.querySelectorAll('.admin-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(adminSectionName).style.display = 'block';
+
+            if (adminSectionName === 'manageProducts') {
+                loadAdminProducts();
+            } else if (adminSectionName === 'manageOrders') {
+                loadAdminOrders();
+            } else if (adminSectionName === 'manageUsers') {
+                loadAdminUsers();
+            }
+        }
+
+        async function loadAdminProducts() {
+            const container = document.getElementById('adminProductsList');
+            
+            if (products.length === 0) {
+                container.innerHTML = '<div class="empty-state">No hay productos para gestionar</div>';
+                return;
+            }
+            
+            container.innerHTML = products.map(product => {
+                const imageUrl = getProductImageUrl(product);
+                
+                return `
+                    <div class="product-card">
+                        <img src="${imageUrl}" 
+                             alt="${product.nombre}" 
+                             class="product-image"
+                             onerror="this.src='${config.defaultImage}'">
+                        <div class="product-info">
+                            <h3>${product.nombre}</h3>
+                            <p>${product.descripcion}</p>
+                            <p><strong>Precio: ${parseFloat(product.precio).toFixed(2)}</strong></p>
+                            <p>Stock: ${product.stock}</p>
+                        </div>
+                        <div class="cart-controls">
+                            <button onclick="editProduct(${product.id})" class="btn-secondary">Editar</button>
+                            <button onclick="deleteProduct(${product.id})" class="btn-danger">Eliminar</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function loadAdminOrders() {
+            document.getElementById('adminOrdersList').innerHTML = '<div class="empty-state">No hay pedidos disponibles</div>';
+        }
+
+        async function loadAdminUsers() {
+            document.getElementById('adminUsersList').innerHTML = '<div class="empty-state">No hay usuarios disponibles</div>';
+        }
+
+        function loadAdminData() {
+            showAdminSection('manageProducts');
+        }
+
+        // Cerrar modales al hacer clic fuera
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
